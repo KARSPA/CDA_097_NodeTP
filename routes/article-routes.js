@@ -10,15 +10,6 @@ const checkUID = require('../shared/helpers');
 
 function setupRoutes(app){
 
-    mongoose.connection.once('open', ()=>{
-        console.log("Connecté à la BDD");
-    });
-    mongoose.connection.on('error', (err)=>{
-        console.log(`Erreur de la BDD : ${err}`);
-    })
-    mongoose.connect("mongodb://localhost:27017/db_articles");
-
-
     app.get('/articles', async (req, res) => {
 
         const articles = await Article.find();
@@ -58,6 +49,13 @@ function setupRoutes(app){
         const articleJSON = req.body;
         let isTitleOk = await checkTitle(articleJSON);
 
+        if(Object.keys(articleJSON).length==0){// Si article vide
+            return res.json({
+                code : "701",
+                message : "Impossible d'ajouter un article vide",
+                data : null
+            });
+        }
 
         if(!articleJSON.uid){ //Si pas de champ uid dans articleJSON, alors c'est qu'on créer un article
             
@@ -105,10 +103,7 @@ function setupRoutes(app){
                 message : "Article modifié avec succès.",
                 data : articleJSON
             });
-
         }
-
-
     });
 
     
@@ -116,9 +111,9 @@ function setupRoutes(app){
 
         const articleId = req.params.articleId;
 
-        const deletedArticle = await Article.findOneAndDelete({uid : articleId});
+        const articleToDelete = await Article.findOneAndDelete({uid : articleId});
 
-        if(!deletedArticle){
+        if(!articleToDelete){
             return res.json({
                 code : "702",
                 message : "Impossible de supprimé un article dont l'id n'existe pas.",
@@ -129,10 +124,9 @@ function setupRoutes(app){
         return res.json({
             code : "200",
             message : "Article supprimé avec succès.",
-            data : deletedArticle
+            data : articleToDelete
         });
     });
-
 }
 
 
