@@ -3,6 +3,10 @@ let osef = require('../bouchon/articles');
 const mongoose = require('mongoose');
 const {v4 : uuidv4} = require('uuid');
 
+const Article = require('../mongoose/models/mongoose-article');
+
+const checkTitle = require('../shared/helpers');
+const checkUID = require('../shared/helpers');
 
 function setupRoutes(app){
 
@@ -13,9 +17,6 @@ function setupRoutes(app){
         console.log(`Erreur de la BDD : ${err}`);
     })
     mongoose.connect("mongodb://localhost:27017/db_articles");
-    
-
-    const Article = mongoose.model('Article', {uid: String, title: String, content: String, author: String }, 'articles');
 
 
     app.get('/articles', async (req, res) => {
@@ -132,34 +133,6 @@ function setupRoutes(app){
         });
     });
 
-
-    async function checkTitle(article){
-    
-        if(article!=undefined && article.title){
-            const checkArticle = await Article.findOne({title : article.title});
-    
-            if(checkArticle){ // Si checkArticle n'est pas null, alors il existe déjà un article avec ce titre.
-                return false;
-            }
-            return true;
-    
-        }
-        return true;
-    }
-
-    async function checkUID(article){
-    
-        if(article!=undefined && article.uid){
-            const checkArticle = await Article.findOne({uid : article.uid});
-    
-            if(checkArticle){ // Si checkArticle n'est pas null, alors il existe déjà un article avec cet uid, on peut donc modifier.
-                return true;
-            }
-            return false;
-    
-        }
-        return true;
-    }
 }
 
 
