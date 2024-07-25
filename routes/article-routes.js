@@ -8,17 +8,16 @@ const Article = require('../mongoose/models/mongoose-article');
 const checkTitle = require('../shared/helpers');
 const checkUID = require('../shared/helpers');
 
+const responseService = require('../shared/responseService');
+
 function setupRoutes(app){
 
     app.get('/articles', async (req, res) => {
 
         const articles = await Article.find();
 
-        return res.json({
-            code : "200",
-            message : "La liste des articles a été récupérées avec succès.",
-            data : articles
-        });
+        return responseService(res, "200", "La liste des articles a été récupérées avec succès.", articles);
+        
     });
     
     app.get('/article/:articleId', async (req, res) => {
@@ -28,18 +27,10 @@ function setupRoutes(app){
         const foundArticle = await Article.findOne({uid : articleId});
 
         if(!foundArticle){
-            return res.json({
-                code : "702",
-                message : `Aucun article trouvé avec cet identifiant !`,
-                data : null
-            })
+            return responseService(res, "702", `Aucun article trouvé avec cet identifiant !`, null);
         }
 
-        return res.json({
-            code : "200",
-            message : "Article récupéré avec succès.",
-            data : foundArticle
-        });
+        return responseService(res, "200", "Article récupéré avec succès.", foundArticle);
 
     });
     
@@ -50,11 +41,7 @@ function setupRoutes(app){
         let isTitleOk = await checkTitle(articleJSON);
 
         if(Object.keys(articleJSON).length==0){// Si article vide
-            return res.json({
-                code : "701",
-                message : "Impossible d'ajouter un article vide",
-                data : null
-            });
+            return responseService(res, "701", "Impossible d'ajouter un article vide", null);
         }
 
         if(!articleJSON.uid){ //Si pas de champ uid dans articleJSON, alors c'est qu'on créer un article
@@ -62,47 +49,27 @@ function setupRoutes(app){
             articleJSON.uid = uuidv4();
     
             if(!isTitleOk){
-                return res.json({
-                    code : "701",
-                    message : "Impossible d'ajouter un article avec un titre déjà existant.",
-                    data : null
-                });
+                return responseService(res, "701", "Impossible d'ajouter un article avec un titre déjà existant.", null);
             }
     
             const createdArticle = await Article.create(articleJSON);
-            
-            return res.json({
-                code : "200",
-                message : "Article ajouté avec succès.",
-                data : createdArticle
-            });
+
+            return responseService(res, "200", "Article ajouté avec succès.", createdArticle);
 
         }else{ // Sinon c'est qu'il y a un champ uid dans articleJSON, donc on modifie
             let isUIDOk = await checkUID(articleJSON);
 
             if(!isUIDOk){
-                return res.json({
-                    code : "702",
-                    message : "Impossible de modifier un article dont l'id n'existe pas.",
-                    data : null
-                });
+                return responseService(res, "702", "Impossible de modifier un article dont l'id n'existe pas.", null);
             }
 
             if(!isTitleOk){
-                return res.json({
-                    code : "701",
-                    message : "Impossible de modifier un article si un autre article possède le titre choisi. ",
-                    data : null
-                });
+                return responseService(res, "701", "Impossible de modifier un article si un autre article possède le titre choisi.", null);
             }
 
-            const modifiedArticle = await Article.updateOne(articleJSON);
+            await Article.findOneAndUpdate({uid : articleJSON.uid}, articleJSON);
 
-            return res.json({
-                code : "200",
-                message : "Article modifié avec succès.",
-                data : articleJSON
-            });
+            return responseService(res, "200", "Article modifié avec succès.", articleJSON);
         }
     });
 
@@ -114,18 +81,11 @@ function setupRoutes(app){
         const articleToDelete = await Article.findOneAndDelete({uid : articleId});
 
         if(!articleToDelete){
-            return res.json({
-                code : "702",
-                message : "Impossible de supprimé un article dont l'id n'existe pas.",
-                data : null
-            });
+            return responseService(res, "702", "Impossible de supprimé un article dont l'id n'existe pas.", null);
         }
 
-        return res.json({
-            code : "200",
-            message : "Article supprimé avec succès.",
-            data : articleToDelete
-        });
+        return responseService(res, "200", "Article supprimé avec succès.", articleToDelete);
+
     });
 }
 
