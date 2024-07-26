@@ -1,9 +1,16 @@
 const mongoose = require('mongoose');
 const Article = require('../mongoose/models/mongoose-article');
 
+const jwt = require('jsonwebtoken');
+
+function generateAccessToken(username, secret, duration){
+    const token = jwt.sign({username : username}, secret, {expiresIn: `${duration}s`});
+    return token;
+}
 
 
-async function checkTitle(article){
+
+async function checkTitleAdd(article){
     
     if(article!=undefined && article.title){
         const checkArticle = await Article.findOne({title : article.title});
@@ -16,6 +23,22 @@ async function checkTitle(article){
     }
     return true;
 }
+
+async function checkTitleModify(article){
+    
+    if(article!=undefined && article.title){
+        const checkArticle = await Article.findOne({title : article.title, uid : { $ne : article.uid}});
+
+        if(checkArticle){ // Si checkArticle n'est pas null, alors il existe déjà un article avec ce titre.
+            return false;
+        }
+        return true;
+
+    }
+    return true;
+}
+
+
 
 async function checkUID(article){
 
@@ -31,5 +54,8 @@ async function checkUID(article){
     return true;
 }
 
-module.exports = checkTitle;
+
+module.exports = generateAccessToken;
+module.exports = checkTitleAdd;
+module.exports = checkTitleModify;
 module.exports = checkUID;

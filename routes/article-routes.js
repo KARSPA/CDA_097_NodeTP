@@ -5,12 +5,13 @@ const {v4 : uuidv4} = require('uuid');
 
 const Article = require('../mongoose/models/mongoose-article');
 
-const checkTitle = require('../shared/helpers');
+const checkTitleAdd = require('../shared/helpers');
+const checkTitleModify = require('../shared/helpers');
 const checkUID = require('../shared/helpers');
 
 const responseService = require('../shared/responseService');
 
-function setupRoutes(app){
+function setupArticleRoutes(app){
 
     app.get('/articles', async (req, res) => {
 
@@ -38,14 +39,14 @@ function setupRoutes(app){
 
         //Récup l'article envoyé en JSON
         const articleJSON = req.body;
-        let isTitleOk = await checkTitle(articleJSON);
-
+        
         if(Object.keys(articleJSON).length==0){// Si article vide
             return responseService(res, "701", "Impossible d'ajouter un article vide", null);
         }
 
         if(!articleJSON.uid){ //Si pas de champ uid dans articleJSON, alors c'est qu'on créer un article
-            
+            let isTitleOk = await checkTitleAdd(articleJSON);
+
             articleJSON.uid = uuidv4();
     
             if(!isTitleOk){
@@ -58,6 +59,7 @@ function setupRoutes(app){
 
         }else{ // Sinon c'est qu'il y a un champ uid dans articleJSON, donc on modifie
             let isUIDOk = await checkUID(articleJSON);
+            let isTitleOk = await checkTitleModify(articleJSON);
 
             if(!isUIDOk){
                 return responseService(res, "702", "Impossible de modifier un article dont l'id n'existe pas.", null);
@@ -90,4 +92,4 @@ function setupRoutes(app){
 }
 
 
-module.exports = setupRoutes;
+module.exports = setupArticleRoutes;
