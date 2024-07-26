@@ -10,6 +10,8 @@ const checkTitleModify = require('../shared/helpers');
 const checkUID = require('../shared/helpers');
 
 const responseService = require('../shared/responseService');
+const auth = require('../shared/middlewares');
+
 
 function setupArticleRoutes(app){
 
@@ -35,7 +37,7 @@ function setupArticleRoutes(app){
 
     });
     
-    app.post('/save-article', async (req, res) => {
+    app.post('/save-article',auth, async (req, res) => {
 
         //Récup l'article envoyé en JSON
         const articleJSON = req.body;
@@ -76,7 +78,7 @@ function setupArticleRoutes(app){
     });
 
     
-    app.delete('/article/:articleId', async (req, res) => {
+    app.delete('/article/:articleId', auth, async (req, res) => {
 
         const articleId = req.params.articleId;
 

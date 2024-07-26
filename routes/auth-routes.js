@@ -9,6 +9,8 @@ const generateAccessToken = require('../shared/helpers');
 
 const usersPromise = require('../bouchon/users');
 
+const auth = require('../shared/middlewares');
+
 async function setupAuthRoutes(app){
 
     //On créer les utilisateurs présent dans la classe bouchon (ce seront ceux de base au lancement du serveur).
